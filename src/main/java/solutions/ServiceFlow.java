@@ -1,6 +1,8 @@
-package java_bootcamp;
+package solutions;
 
 import co.paralleluniverse.fibers.Suspendable;
+import java_bootcamp.ServiceContract;
+import java_bootcamp.ServiceState;
 import net.corda.core.contracts.Command;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.flows.*;
@@ -9,7 +11,6 @@ import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import net.corda.core.utilities.ProgressTracker;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,45 +40,26 @@ public class ServiceFlow extends FlowLogic<SignedTransaction> {
     @Override
     public SignedTransaction call() throws FlowException {
 
-        /* ============================================================================
-         *         Here we retrieve the existing state from the node's vault
-         * ===========================================================================*/
         List<StateAndRef<ServiceState>> serviceStates = getServiceHub().getVaultService().queryBy(ServiceState.class).getStates();
+
         StateAndRef<ServiceState> inputServiceStateAndRef = serviceStates.stream().filter(record -> {
             return record.getState().getData().getOwner().equals(owner);
         }).findAny().orElseThrow(() -> new IllegalArgumentException("No service record found for owner"));
 
         ServiceState inputServiceState = inputServiceStateAndRef.getState().getData();
 
-        /* ===========================================================================*/
+        ServiceState outputServiceState = new ServiceState(inputServiceState.getOwner(),
+                inputServiceState.getMechanic(), inputServiceState.getManufacturer(), servicesProvided, ecoFriendly);
 
-        /* ============================================================================
-         *         TODO 1 - Create our output ServiceState to reflect any services carried out!
-         *         Hint: you can use the existing properties found in the input state
-         * ===========================================================================*/
+        Command command = new Command(new ServiceContract.Commands.Service(),
+                Arrays.asList(owner.getOwningKey(), getOurIdentity().getOwningKey()));
 
-        ServiceState outputServiceState = null;
+        Party notary = inputServiceStateAndRef.getState().getNotary();
 
-        /* ============================================================================
-         *         TODO 2 - Create our Service command. Both owner and mechanic should be signers
-         * ===========================================================================*/
-
-        Command command = null;
-
-
-        /* ============================================================================
-         *         TODO 3 - Obtain a reference to the notary
-         *         Hint: notary should be the same as input state. See if you can get the notary from there
-         * ===========================================================================*/
-
-        Party notary = null;
-
-        /* ============================================================================
-         *         TODO 4 - Create a transaction builder with the input StateAndRef, output and command
-         *         POI: Why is the input a StateAndRef and not just a state?
-         * ===========================================================================*/
-
-        TransactionBuilder transactionBuilder = null;
+        TransactionBuilder transactionBuilder = new TransactionBuilder(notary)
+                .addInputState(inputServiceStateAndRef)
+                .addOutputState(outputServiceState, ServiceContract.ID)
+                .addCommand(command);
 
         SignedTransaction partSignedTransaction = getServiceHub().signInitialTransaction(transactionBuilder);
 

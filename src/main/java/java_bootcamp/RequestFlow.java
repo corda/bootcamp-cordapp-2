@@ -40,12 +40,18 @@ public class RequestFlow extends FlowLogic<SignedTransaction> {
         ServiceState requestState = new ServiceState(ourIdentity, mechanic, manufacturer, "Initial record", true);
         //---------------------------------------------------------------------------------------------------------
 
-        Command command = new Command(new ServiceContract.Commands.Request(), ourIdentity.getOwningKey());
+        /* ============================================================================
+         *         TODO 1 - Create a new Request command with owner as a required signer
+         * ===========================================================================*/
 
-        TransactionBuilder transactionBuilder = new TransactionBuilder(notary);
+        Command command = null;
 
-        transactionBuilder.addOutputState(requestState, ServiceContract.ID);
-        transactionBuilder.addCommand(command);
+        /* ============================================================================
+         *         TODO 1 - Create a new TransactionBuilder, adding in your command and the requestState created above
+         *         POI: Why are we adding requestState as an output, wy not an input?
+         * ===========================================================================*/
+
+        TransactionBuilder transactionBuilder = null;
 
         SignedTransaction signedTransaction = getServiceHub().signInitialTransaction(transactionBuilder);
 

@@ -1,6 +1,8 @@
 package solutions;
 
 import co.paralleluniverse.fibers.Suspendable;
+import java_bootcamp.ServiceContract;
+import java_bootcamp.ServiceState;
 import net.corda.core.contracts.Command;
 import net.corda.core.flows.*;
 import net.corda.core.identity.CordaX500Name;
