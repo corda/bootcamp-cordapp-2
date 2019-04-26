@@ -50,58 +50,81 @@ bootcamp:
 
 Our CorDapp will have three parts:
 
-### The TokenState
+### The ServiceState
 
-States define shared facts on the ledger. Our state, TokenState, will define a
-token. It will have the following structure:
+States define shared facts on the ledger. Our state, ServiceState, will define a
+service record for a car. It will have the following structure:
 
-    -------------------
-    |                 |
-    |   TokenState    |
-    |                 |
-    |   - issuer      |
-    |   - owner       |
-    |   - amount      |
-    |                 |
-    -------------------
+    ------------------------
+    |                      |
+    |   ServiceState       |
+    |                      |
+    |   - owner            |
+    |   - mechanic         |
+    |   - manufacturer     |
+    |   - servicesProvided |
+    |   - ecoFriendly      |
+    |                      |
+    ------------------------
 
-### The TokenContract
+### The ServiceContract
 
-Contracts govern how states evolve over time. Our contract, TokenContract,
-will define how TokenStates evolve. It will only allow the following type of
-TokenState transaction:
+Contracts govern how states evolve over time. Our contract, ServiceContract,
+will define how ServiceStates evolve. It will only allow the following types of
+ServiceState transaction:
 
     -------------------------------------------------------------------------------------
     |                                                                                   |
     |    - - - - - - - - - -                                     -------------------    |
     |                                              ▲             |                 |    |
-    |    |                 |                       | -►          |   TokenState    |    |
+    |    |                 |                       | -►          |   ServiceState  |    |
     |            NO             -------------------     -►       |                 |    |
-    |    |                 |    |      Issue command       -►    |   - issuer      |    |
-    |          INPUTS           |     signed by issuer     -►    |   - owner       |    |
-    |    |                 |    -------------------     -►       |   - amount > 0  |    |
+    |    |                 |    |    Request command       -►    |                 |    |
+    |          INPUTS           |    signed by owner       -►    |                 |    |
+    |    |                 |    -------------------     -►       |                 |    |
     |                                              | -►          |                 |    |
     |    - - - - - - - - - -                       ▼             -------------------    |
     |                                                                                   |
     -------------------------------------------------------------------------------------
 
-              No inputs             One issue command,                One output,
-                                 issuer is a required signer       amount is positive
+              No inputs             One Request command,                One output
+                                 owner is a required signer       
+                                 
+                                 
+    -------------------------------------------------------------------------------------
+    |                                                                                   |
+    |    - - - - - - - - - -                                     -------------------    |
+    |                                              ▲             |                 |    |
+    |    |   ServiceState  |                       | -►          |   ServiceState  |    |
+    |                           -------------------     -►       |                 |    |
+    |    |                 |   |    Service command        -►    |                 |    |
+    |                          |signed by owner&mechanic   -►    |                 |    |
+    |    |                 |    -------------------     -►       |                 |    |
+    |                                              | -►          |                 |    |
+    |    - - - - - - - - - -                       ▼             -------------------    |
+    |                                                                                   |
+    -------------------------------------------------------------------------------------
 
-To do so, TokenContract will impose the following constraints on transactions
-involving TokenStates:
+              One input             One Service command,                One output
+                           owner and mechanic are required signers  
+
+To do so, ServiceContract will impose some combination of the following constraints on transactions
+involving ServiceStates:
 
 * The transaction has no input states
-* The transaction has one output state
+* The transaction has  input states
+* The transaction has ononee output state
 * The transaction has one command
-* The output state is a TokenState
-* The output state has a positive amount
-* The command is an Issue command
-* The command lists the TokenState's issuer as a required signer
+* The output state is a ServiceState
+* The output state has servicesProvided added
+* The command is a Request command
+* The command is a Service command
+* The command lists the ServiceState's owner as a required signer
+* The command lists the ServiceState's owner and mechanic as required signers
 
-### The TokenIssueFlow
+### The ServiceRequestFlow
 
-Flows automate the process of updating the ledger. Our flow, TokenIssueFlow, will
+Flows automate the process of updating the ledger. Our flow, ServiceRequestFlow, will
 automate the following steps:
 
             Issuer                  Owner                  Notary
